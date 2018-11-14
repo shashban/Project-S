@@ -1,0 +1,18 @@
+- hosts: all
+  tasks:
+    - name: Ansible copy file force
+      copy:
+        src: '{{source}}'
+        dest: '{{destination}}'
+    
+    - name: Copying to tomcat webapp
+      command: nohup  cp '{{destination}}' '{{tomcatwebapp}}'
+
+    - name: Shutting down tomcat server
+      command: nohup  /opt/tomcat/bin/shutdown.sh  
+    
+    - name: Starting tomcat
+      command: nohup  /opt/tomcat/bin/startup.sh
+    
+    - name: App deployed '{{appurl}}'
+      command: echo "App is deployed at {{appurl}}"
