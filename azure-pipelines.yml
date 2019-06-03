@@ -1,0 +1,75 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: AzureResourceGroupDeployment@2
+  displayName: 'Create Azure container registry'
+  inputs:
+    azureSubscription: 'RMPM (afc11291-9826-46be-b852-70349146ddf8)'
+    resourceGroupName: 'project-s-rg'
+    location: 'East US'
+    csmFile: '$(System.DefaultWorkingDirectory)/**/containerRegistry-template.json'
+    overrideParameters: '-registryName "projectsacr" -registryLocation "South Central US" -registrySku "Standard"'
+
+- task: Docker@0
+  displayName: 'Build an image'
+  inputs:
+    azureSubscription: 'RMPM (afc11291-9826-46be-b852-70349146ddf8)'
+    azureContainerRegistry: '{"loginServer":"projectsacr.azurecr.io", "id" : "/subscriptions/afc11291-9826-46be-b852-70349146ddf8/resourceGroups/project-s-rg/providers/Microsoft.ContainerRegistry/registries/projectsacr"}'
+    imageName: 'projectsacr.azurecr.io/projects:$(Build.BuildId)'
+    includeLatestTag: true
+
+- task: Docker@0
+  displayName: 'Push an image'
+  inputs:
+    azureSubscription: 'RMPM (afc11291-9826-46be-b852-70349146ddf8)'
+    azureContainerRegistry: '{"loginServer":"projectsacr.azurecr.io", "id" : "/subscriptions/afc11291-9826-46be-b852-70349146ddf8/resourceGroups/project-s-rg/providers/Microsoft.ContainerRegistry/registries/projectsacr"}'
+    action: 'Push an image'
+    imageName: 'projectsacr.azurecr.io/projects:$(Build.BuildId)'
+    includeLatestTag: true    
+
+- task: HelmInstaller@0
+  displayName: 'Install Helm 2.9.1'
+  inputs:
+    kubectlVersion: 1.10.3
+
+- task: HelmDeploy@0
+  displayName: 'helm package'
+  inputs:
+    azureSubscription: 'RMPM (afc11291-9826-46be-b852-70349146ddf8)'
+    command: package
+    chartPath: '**/charts/sampleapp'
+    save: false
+
+- task: CopyFiles@2
+  displayName: 'Copy ARM templates'
+  inputs:
+    SourceFolder: ArmTemplates
+    TargetFolder: '$(build.artifactstagingdirectory)'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish artifact: drop'
+
+- task: CopyFiles@2
+  displayName: 'Copy scripts'
+  inputs:
+    SourceFolder: Scripts
+    TargetFolder: '$(build.artifactstagingdirectory)'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish scripts'
+  inputs:
+    ArtifactName: Scripts
+
+
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
