@@ -70,6 +70,6 @@ steps:
     ArtifactName: Scripts
 
 
-- script: echo Hello, world!
+- script: Build completed!
   displayName: 'Build verification'
 
