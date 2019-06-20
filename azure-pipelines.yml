@@ -5,22 +5,25 @@
 
 trigger:
 - master
-
+# Repo: Contoso/LinuxProduct
+# File: azure-pipelines.yml
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: shashban/extensions-1
+      
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+- template: template.yml@templates  # Template reference
 - task: CopyFiles@2
   displayName: 'Copy scripts'
   inputs:
-    SourceFolder: Scripts
+    SourceFolder: template
     TargetFolder: '$(build.artifactstagingdirectory)'
-
 - task: PublishBuildArtifacts@1
   displayName: 'Publish scripts'
   inputs:
     ArtifactName: Scripts
-
-- script: echo "Build completed!"
-  displayName: 'Build verification'
-
