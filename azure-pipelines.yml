@@ -20,6 +20,8 @@ pool:
 
 steps:
 - template: template.yml@templates  # Template reference
+  parameters:
+    repositoryName: templates
 - task: CopyFiles@2
   displayName: 'Copy scripts'
   inputs:
