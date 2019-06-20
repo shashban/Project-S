@@ -5,6 +5,7 @@
 
 trigger:
 - master
+
 # Repo: Contoso/LinuxProduct
 # File: azure-pipelines.yml
 resources:
